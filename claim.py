@@ -43,14 +43,19 @@ def claim(page):
         raise RuntimeError("logged out")
     btn = page.locator('button:visible:has-text("Claim Now"), a:visible:has-text("Claim Now")')
     if btn.count() and btn.first.is_enabled():
-        btn.first.hover(); pause(0.5, 1.5)
+        btn.first.hover()
+        pause(0.5, 1.5)
         btn.first.click()
         print(time.strftime("%H:%M:%S"), "CLICKED Claim Now", flush=True)
         pause(5, 8)
-        print("after click:", page.inner_text("body")[:200].replace("\n", " | "), flush=True)
+        page.reload(wait_until="domcontentloaded")
+        pause(2, 3)
+        txt = page.inner_text("body")
+        bal = re.search(r"([\d.]+)\s*XRP", txt)
+        nxt = re.search(r"Next Claim In\s*(\d{2}:\d{2})", txt)
+        print("balance:", bal[1] if bal else "?", "| next claim in:", nxt[1] if nxt else "?", flush=True)
     else:
         print(time.strftime("%H:%M:%S"), "button not ready", flush=True)
-        diag(page, "no claim button")
     return seconds_left(page)
 
 with sync_playwright() as p:
@@ -64,13 +69,14 @@ with sync_playwright() as p:
     login(page)
     while time.time() - START < RUN_LIMIT:
         try:
-            wait = claim(page) + random.randint(10, 60)
+            left = claim(page)
+            wait = min(left + random.randint(10, 60), random.randint(120, 600))
         except Exception as e:
             print("error:", type(e).__name__, str(e)[:150], flush=True)
             wait = 90
-            try: login(page)
-            except Exception as e2: print("relogin failed:", type(e2).__name__, flush=True)
+            try:
+                login(page)
+            except Exception as e2:
+                print("relogin failed:", type(e2).__name__, flush=True)
         print("sleep", wait, "sec", flush=True)
-        #time.sleep(max(wait, 30))
-        left = claim(page)
-         wait = min(left + random.randint(10, 60), random.randint(120, 600))
+        time.sleep(max(wait, 30))
