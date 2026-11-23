@@ -1,0 +1,24 @@
+name: faucet-claim
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+concurrency:
+  group: faucet
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install playwright
+          playwright install --with-deps chromium
+      - run: python claim.py
+        env:
+          FE_USER: ${{ secrets.FE_USER }}
+          FE_PASS: ${{ secrets.FE_PASS }}
