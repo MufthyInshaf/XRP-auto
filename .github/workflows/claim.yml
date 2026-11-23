@@ -18,7 +18,7 @@ jobs:
       - run: |
           pip install playwright
           playwright install --with-deps chromium
-      - run: python debug.py
+      - run: python claim.py
         env:
           FE_USER: ${{ secrets.FE_USER }}
           FE_PASS: ${{ secrets.FE_PASS }}
