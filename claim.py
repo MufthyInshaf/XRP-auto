@@ -71,4 +71,6 @@ with sync_playwright() as p:
             try: login(page)
             except Exception as e2: print("relogin failed:", type(e2).__name__, flush=True)
         print("sleep", wait, "sec", flush=True)
-        time.sleep(max(wait, 30))
+        #time.sleep(max(wait, 30))
+        left = claim(page)
+         wait = min(left + random.randint(10, 60), random.randint(120, 600))
